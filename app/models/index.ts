@@ -15,19 +15,24 @@ const db: Record<string, any> = {};
 let sequelize: Sequelize;
 sequelize = new Sequelize(config.database, config.username, config.password, config);
 
+const initializePromise =
 fs
   .readdirSync(__dirname)
   .filter(file => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-9, -3) === '.model'))
-  .forEach(async (file) => {
+  .map(async (file) => {
     const model = (await import(path.join(__dirname, file))).default;
-    db[model.name] = model.initialize(sequelize);
+    return db[model.name] = model.initialize(sequelize);
   });
 
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+Promise
+  .all(initializePromise)
+  .then(() => {
+    Object.keys(db).forEach((modelName) => {
+      if (db[modelName].associate) {
+        db[modelName].associate(db);
+      }
+    });
+  });
 
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;

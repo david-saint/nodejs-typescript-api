@@ -53,7 +53,13 @@ export default class Admin extends Model {
    * @param  {Object} models
    * @return {void}
    */
-  static associate(models: Record<string, any>) {
-    // specify the relations as property
+  static associate(models: Record<string, typeof Model>) {
+    /**
+     * Specify relationships as properties using, the methods
+     * available on sequelize.Model
+     * 
+     * for example:
+     * this.hasMany(models.Market, {sourceKey: 'id', foreignKey: 'ownerId', as: 'markets'});
+     */
   }
 }
