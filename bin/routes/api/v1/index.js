@@ -1,0 +1,21 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const helpers_1 = require("routes/__init__/helpers");
+const handlers_1 = require("routes/__init__/handlers");
+const auth_middleware_1 = __importDefault(require("routes/middlewares/auth.middleware"));
+const authentication_controller_1 = __importDefault(require("controllers/authentication.controller"));
+const router = express_1.Router();
+router.get('/', (req, res) => res.json({ data: { message: '/api/v1' } }));
+router.post('/login', helpers_1.resolve(authentication_controller_1.default, 'login'));
+router.post('/logout', helpers_1.resolve(authentication_controller_1.default, 'logout'));
+router.get('/refresh', helpers_1.resolve(authentication_controller_1.default, 'refresh'));
+router.post('/register', helpers_1.resolve(authentication_controller_1.default, 'register'));
+const protectedRouter = express_1.Router();
+protectedRouter.use(handlers_1.catchErrors(auth_middleware_1.default('admin')));
+protectedRouter.get('/user', helpers_1.resolve(authentication_controller_1.default, 'user'));
+router.use(protectedRouter);
+exports.default = router;
