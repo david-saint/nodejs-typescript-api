@@ -162,8 +162,8 @@ export default class Resource implements IResource {
    * @param  {Number} status
    * @return {AnonymousResourceCollection}
    */
-  static collection(resource: Record<string, any>, status = 200, path = this.path) {
-    return new ResourceCollection(resource, status, this.name, path);
+  static collection(resource: Record<string, any>, status = 200) {
+    return new ResourceCollection(resource, status, this);
   }
 
   /**
@@ -194,7 +194,10 @@ export default class Resource implements IResource {
 
 export class ResourceCollection extends Resource implements IResourceCollection {
 
-  // @ts-ignore
+  /**
+   * the resource type that would be in the collection.
+   * @type {IResource}
+   */
   public Collects: IResource;
 
   /**
@@ -204,17 +207,9 @@ export class ResourceCollection extends Resource implements IResourceCollection 
    * @param  {string} collects
    * @return {void}
    */
-  constructor(resource: Record<string, any>, status: number, collects: string, path: string) {
+  constructor(resource: Record<string, any>, status: number, collects: any) {
     super(resource, status);
-
-    if (collects.slice(-8) === 'Resource') {
-      collects = collects.slice(0, -8);
-    }
-
-    import(`./${path}${_.kebabCase(collects)}.resource`)
-      .then(collect => {
-        this.Collects = collect;
-      });
+    this.Collects = collects;
     this._resource = this.collectResource(resource);
   }
 
