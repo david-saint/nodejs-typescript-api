@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import {Request, Response} from 'express';
 import IResource from './resource.interface';
 import Paginator from 'models/paginator.base';
@@ -30,6 +31,13 @@ export default class Resource implements IResource {
    */
   // @ts-ignore
   protected _request: Request;
+
+  /**
+   * The default path for resources.
+   * 
+   * @type {string}
+   */
+  public static path: string = '';
 
   /**
    * Create a new resource instance.
@@ -154,8 +162,8 @@ export default class Resource implements IResource {
    * @param  {Number} status
    * @return {AnonymousResourceCollection}
    */
-  static collection(resource: Record<string, any>, status = 200) {
-    return new ResourceCollection(resource, status, this.name);
+  static collection(resource: Record<string, any>, status = 200, path = this.path) {
+    return new ResourceCollection(resource, status, this.name, path);
   }
 
   /**
@@ -196,10 +204,14 @@ export class ResourceCollection extends Resource implements IResourceCollection 
    * @param  {string} collects
    * @return {void}
    */
-  constructor(resource: Record<string, any>, status: number, collects: string) {
+  constructor(resource: Record<string, any>, status: number, collects: string, path: string) {
     super(resource, status);
 
-    import(`../${collects}`)
+    if (collects.slice(-8) === 'Resource') {
+      collects = collects.slice(0, -8);
+    }
+
+    import(`./${path}${_.kebabCase(collects)}.resource`)
       .then(collect => {
         this.Collects = collect;
       });

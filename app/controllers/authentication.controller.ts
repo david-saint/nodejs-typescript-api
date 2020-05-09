@@ -103,12 +103,37 @@ export default class AuthenticationController extends Controller {
     return new AdminResource(user, 201);
   }
 
-
+  /**
+   * Get the authenticated user.
+   * @param {RequestWithUser} request  [description]
+   * @param {Response}        response [description]
+   */
   public user(request: RequestWithUser, response: Response) {
     const user = request.user;
 
     // @ts-ignore
     return new AdminResource(user, 200);
+  }
+
+  /**
+   * refresh the auth token for the user
+   * @param {RequestWithUser} request  [description]
+   * @param {Response}        response [description]
+   */
+  public async refresh(request: RequestWithUser, response: Response) {
+    const {user} = request;
+    // generate a token for the user
+    const {token, expiresIn}: TokenData = this.createToken({
+      id: user!.id,
+      email: user!.email,
+      lastName: user!.lastName,
+      firstName: user!.firstName,
+    });
+
+    // set the header.
+    response.setHeader('Authorization', 'Bearer ' + token);
+    // return the token.
+    return response.status(200).json({data: {token, expiresIn}});
   }
 
   /**
